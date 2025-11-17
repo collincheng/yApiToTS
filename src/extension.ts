@@ -19,7 +19,14 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from qdll-generate-yapi!');
 	});
 
+	const generateAPICommand = vscode.commands.registerCommand('qdll-generate-yapi.generateAPI', () => {
+		// The code you place here will be executed every time your command is executed
+		// Display a message box to the user
+		vscode.window.showInformationMessage('Generate API from qdll-generate-yapi!');
+	});
+
 	context.subscriptions.push(disposable);
+	context.subscriptions.push(generateAPICommand);
 }
 
 // This method is called when your extension is deactivated

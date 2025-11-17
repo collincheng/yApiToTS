@@ -14,6 +14,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "qdll-generate-yapi.generateAPI",
+        "title": "Generate API"
+      },
+      {
         "command": "qdll-generate-yapi.helloWorld",
         "title": "Hello World"
       }
