@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ConfigInfo } from '../utils/configInfo';
 import { CONFIG_FILE_NAME } from '../constant';
+import { YApiService } from './yApiService';
 
 export class TerminalService {
     private readonly outputChannel: vscode.OutputChannel;
@@ -18,6 +19,14 @@ export class TerminalService {
             this.print('🔑 Config file read successfully');
             this.print('🔑 Username: ' + configInfo.username);
             this.print('🔑 Password: ' + configInfo.password);
+            const yApiService = new YApiService(configInfo.username, configInfo.password);
+            yApiService.login().then((res) => {
+                this.print('🔑 Login successfully');
+                this.print('🔑 Token: ' + res);
+            }).catch((err) => {
+                this.print('❌ Login failed');
+                this.print('❌ Error: ' + err);
+            });
         }
     }
 
