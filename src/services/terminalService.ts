@@ -18,15 +18,12 @@ export class TerminalService {
     this.print("🚀 Starting QDLL YAPI Terminal...");
     const configInfo = this.readConfigFile();
     if (configInfo) {
-      this.print("🔑 Config file read successfully");
-      this.print("🔑 Username: " + configInfo.username);
-      this.print("🔑 Password: " + configInfo.password);
       this.yApiService = new YApiService(
         configInfo.username,
         configInfo.password
       );
       await this.yApiService.login();
-      this.print("🔑 Login successfully");
+      this.print("✅ Login successfully");
       const selectedGroup = await this.selectGroup();
       if (selectedGroup) {
         this.print("🔑 Selected group: " + JSON.stringify(selectedGroup));
@@ -54,10 +51,11 @@ export class TerminalService {
       return;
     }
     const groupList = await this.yApiService.getGroupList();
+    // 过滤掉废弃的吧
     const selectedGroupList = groupList.map((group) => ({
       label: group.group_name,
       value: group._id,
-    }));
+    })).filter((item) => !item.label.includes('废弃了'));
     this.print("🔑 Group list: " + JSON.stringify(selectedGroupList));
     const selectedGroup = (await vscode.window.showQuickPick(
       selectedGroupList,
