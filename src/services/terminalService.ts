@@ -26,7 +26,7 @@ export class TerminalService {
       this.print("✅ Login successfully");
       const selectedGroup = await this.selectGroup();
       if (selectedGroup) {
-        this.print("🔑 Selected group: " + JSON.stringify(selectedGroup));
+        this.selectProject(selectedGroup.value);
       }
     }
   }
@@ -56,15 +56,35 @@ export class TerminalService {
       label: group.group_name,
       value: group._id,
     })).filter((item) => !item.label.includes('废弃了'));
-    this.print("🔑 Group list: " + JSON.stringify(selectedGroupList));
     const selectedGroup = (await vscode.window.showQuickPick(
       selectedGroupList,
       {
         placeHolder: "Select a group",
         canPickMany: false,
       }
-    )) as string | undefined;
+    ));
     return selectedGroup;
+  }
+
+  private async selectProject(groupId: number) {
+    if (!this.yApiService) {
+      vscode.window.showErrorMessage("YApi服务未初始化");
+      return;
+    }
+    const projectList = await this.yApiService.getProjectListById(groupId);
+    this.print("🔑 Project list: " + JSON.stringify(projectList));
+    const selectedProjectList = projectList.map((project) => ({
+      label: project.name,
+      value: project._id,
+    }));
+    const selectedProject = (await vscode.window.showQuickPick(
+      selectedProjectList,
+      {
+        placeHolder: "Select a project",
+        canPickMany: false,
+      }
+    ));
+    return selectedProject;
   }
 
   private print(message: string) {

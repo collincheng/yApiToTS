@@ -6,6 +6,11 @@ export interface Group {
   _id: number;
 }
 
+interface Project {
+  name: string;
+  _id: number;
+}
+
 export class YApiService {
   private readonly username: string;
   private readonly password: string;
@@ -51,6 +56,21 @@ export class YApiService {
       vscode.window.showErrorMessage("获取分组列表失败: " + error);
       return [];
     }
+  }
+
+  async getProjectListById(id: number) {
+    const response = await fetch(
+      `${this.baseURL}/api/project/list?group_id=${id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: this.cookie,
+        },
+      }
+    );
+    const res = (await response.json()) as { data: { list: Project[] } };
+    return res.data.list;
   }
 
   private async getToken(response: Response) {
