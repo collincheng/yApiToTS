@@ -9,7 +9,7 @@ export interface Group {
 interface Project {
   name: string;
   _id: number;
-  basepath: string
+  basepath: string;
 }
 
 interface Menu {
@@ -21,6 +21,8 @@ interface Menu {
 interface Interface {
   title: string;
   _id: number;
+  req_body_other: string;
+  res_body: string;
 }
 
 export class YApiService {
@@ -45,7 +47,6 @@ export class YApiService {
         "Content-Type": "application/json",
       },
     });
-    console.log(response);
     const token = await this.getToken(response);
     this.token = token;
     this.uid = ((await response.json()) as { data: any }).data.uid;
@@ -84,26 +85,37 @@ export class YApiService {
     const res = (await response.json()) as { data: { list: Project[] } };
     return res.data.list;
   }
-  
 
   async getMenuListById(id: number) {
     try {
-    const response = await fetch(
-      `${this.baseURL}/api/interface/list_menu?project_id=${id}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: this.cookie,
-        },
-      }
-    );
-    const res = (await response.json()) as { data: Menu[] };
-    return res.data;
+      const response = await fetch(
+        `${this.baseURL}/api/interface/list_menu?project_id=${id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: this.cookie,
+          },
+        }
+      );
+      const res = (await response.json()) as { data: Menu[] };
+      return res.data;
     } catch (error) {
       vscode.window.showErrorMessage("获取菜单列表失败: " + error);
       return [];
     }
+  }
+
+  async getApiDetailById(id: number) {
+    const response = await fetch(`${this.baseURL}/api/interface/get?id=${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: this.cookie,
+      },
+    });
+    const res = (await response.json()) as { data: Interface };
+    return res.data;
   }
 
   private async getToken(response: Response) {

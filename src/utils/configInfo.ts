@@ -3,7 +3,7 @@ import { CONFIG_FILE_NAME } from '../constant';
 import path from 'path';
 import fs from 'fs';
 
-interface ConfigInfoRes{
+ export interface ConfigInfoRes{
     username: string;
     password: string;
 }
