@@ -38,6 +38,8 @@ async function main() {
 		external: [
 			'vscode',
 			'json-schema-to-typescript',
+			'@vitalets/google-translate-api',
+			'change-case',
 		],
 		logLevel: 'silent',
 		plugins: [
