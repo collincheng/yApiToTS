@@ -25,14 +25,21 @@ export class TerminalService {
       await this.yApiService.login();
       this.print("✅ Login successfully");
       const selectedGroup = await this.selectGroup();
-      if (selectedGroup) {
-        const selectedProject = await this.selectProject(selectedGroup.value);
-        if (selectedProject) {
-          const selectedMenu = await this.selectMenu(selectedProject.value);
-          if (selectedMenu) {
-            this.print("✅ Menu selected: " + selectedMenu.label);
-          }
+      if (!selectedGroup) {
+        return;
+      }
+      const selectedProject = await this.selectProject(selectedGroup.value);
+      if (!selectedProject) {
+        return;
+      }
+      const selectedMenu = await this.selectMenu(selectedProject.value);
+      if (selectedMenu) {
+        if (selectedMenu.list.length === 0) {
+          vscode.window.showErrorMessage("该菜单下没有接口");
+          return;
         }
+        this.print("🔑 Basepath: " + selectedProject.basepath);
+        this.print("当前有" + selectedMenu.list.length + "个接口");
       }
     }
   }
@@ -58,17 +65,16 @@ export class TerminalService {
     }
     const groupList = await this.yApiService.getGroupList();
     // 过滤掉废弃的吧
-    const selectedGroupList = groupList.map((group) => ({
-      label: group.group_name,
-      value: group._id,
-    })).filter((item) => !item.label.includes('废弃了'));
-    const selectedGroup = (await vscode.window.showQuickPick(
-      selectedGroupList,
-      {
-        placeHolder: "Select a group",
-        canPickMany: false,
-      }
-    ));
+    const selectedGroupList = groupList
+      .map((group) => ({
+        label: group.group_name,
+        value: group._id,
+      }))
+      .filter((item) => !item.label.includes("废弃了"));
+    const selectedGroup = await vscode.window.showQuickPick(selectedGroupList, {
+      placeHolder: "Select a group",
+      canPickMany: false,
+    });
     return selectedGroup;
   }
 
@@ -82,14 +88,15 @@ export class TerminalService {
     const selectedProjectList = projectList.map((project) => ({
       label: project.name,
       value: project._id,
+      basepath: project.basepath,
     }));
-    const selectedProject = (await vscode.window.showQuickPick(
+    const selectedProject = await vscode.window.showQuickPick(
       selectedProjectList,
       {
         placeHolder: "Select a project",
         canPickMany: false,
       }
-    ));
+    );
     return selectedProject;
   }
 
@@ -104,14 +111,12 @@ export class TerminalService {
     const selectedMenuList = menuList.map((menu) => ({
       label: menu.desc,
       value: menu._id,
+      list: menu.list,
     }));
-    const selectedMenu = (await vscode.window.showQuickPick(
-      selectedMenuList,
-      {
-        placeHolder: "Select a menu",
-        canPickMany: false,
-      }
-    ));
+    const selectedMenu = await vscode.window.showQuickPick(selectedMenuList, {
+      placeHolder: "Select a menu",
+      canPickMany: false,
+    });
     return selectedMenu;
   }
 

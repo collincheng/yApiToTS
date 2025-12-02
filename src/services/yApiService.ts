@@ -9,10 +9,17 @@ export interface Group {
 interface Project {
   name: string;
   _id: number;
+  basepath: string
 }
 
 interface Menu {
   desc: string;
+  _id: number;
+  list: Interface[];
+}
+
+interface Interface {
+  title: string;
   _id: number;
 }
 
@@ -77,6 +84,7 @@ export class YApiService {
     const res = (await response.json()) as { data: { list: Project[] } };
     return res.data.list;
   }
+  
 
   async getMenuListById(id: number) {
     try {
