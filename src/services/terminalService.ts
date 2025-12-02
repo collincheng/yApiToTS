@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
-import { ConfigInfo, ConfigInfoRes } from "../utils/configInfo";
-import { CONFIG_FILE_NAME } from "../constant";
+import { ConfigInfoRes } from "../utils/configInfo";
 import { YApiService } from "./yApiService";
 import { compile } from "json-schema-to-typescript";
 import fs from "fs";
@@ -32,7 +31,7 @@ export class TerminalService {
         vscode.window.showErrorMessage("该菜单下没有接口");
         return;
       }
-      this.print("🔑 Basepath: " + selectedProject.basepath);
+      this.print("Basepath: " + selectedProject.basepath);
       this.print("当前有" + selectedMenu.list.length + "个接口");
       for (const api of selectedMenu.list) {
         const apiDetail = await this.getApiDetail(api._id);
@@ -66,24 +65,8 @@ export class TerminalService {
     }
   }
 
-  private readConfigFile() {
-    this.print("步骤1: 读取配置文件");
-    const configInfo = ConfigInfo.getConfigInfo();
-    // 检查配置文件是否有效
-    if (!configInfo || !configInfo.password || !configInfo.username) {
-      vscode.window.showErrorMessage(
-        `${CONFIG_FILE_NAME} config file is invalid`
-      );
-      return ;
-    }
-    this.print("✅ 配置文件读取成功");
-    return configInfo;
-  }
-
   private async selectGroup() {
-    // yApiService 在 start() 中已确保初始化，这里一定有值
     const groupList = await this.yApiService.getGroupList();
-    // 过滤掉废弃的吧
     const selectedGroupList = groupList
       .map((group) => ({
         label: group.group_name,
@@ -98,9 +81,7 @@ export class TerminalService {
   }
 
   private async selectProject(groupId: number) {
-    // yApiService 在 start() 中已确保初始化，这里一定有值
     const projectList = await this.yApiService.getProjectListById(groupId);
-    this.print("🔑 Project list: " + JSON.stringify(projectList));
     const selectedProjectList = projectList.map((project) => ({
       label: project.name,
       value: project._id,
@@ -117,10 +98,7 @@ export class TerminalService {
   }
 
   private async selectMenu(projectId: number) {
-    // yApiService 在 start() 中已确保初始化，这里一定有值
-    this.print("🔑 Project ID: " + projectId);
     const menuList = await this.yApiService.getMenuListById(projectId);
-    this.print("🔑 Menu list: " + JSON.stringify(menuList));
     const selectedMenuList = menuList.map((menu) => ({
       label: menu.desc,
       value: menu._id,
