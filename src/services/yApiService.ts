@@ -11,6 +11,11 @@ interface Project {
   _id: number;
 }
 
+interface Menu {
+  desc: string;
+  _id: number;
+}
+
 export class YApiService {
   private readonly username: string;
   private readonly password: string;
@@ -71,6 +76,26 @@ export class YApiService {
     );
     const res = (await response.json()) as { data: { list: Project[] } };
     return res.data.list;
+  }
+
+  async getMenuListById(id: number) {
+    try {
+    const response = await fetch(
+      `${this.baseURL}/api/interface/list_menu?project_id=${id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: this.cookie,
+        },
+      }
+    );
+    const res = (await response.json()) as { data: Menu[] };
+    return res.data;
+    } catch (error) {
+      vscode.window.showErrorMessage("获取菜单列表失败: " + error);
+      return [];
+    }
   }
 
   private async getToken(response: Response) {

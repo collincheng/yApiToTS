@@ -26,7 +26,13 @@ export class TerminalService {
       this.print("✅ Login successfully");
       const selectedGroup = await this.selectGroup();
       if (selectedGroup) {
-        this.selectProject(selectedGroup.value);
+        const selectedProject = await this.selectProject(selectedGroup.value);
+        if (selectedProject) {
+          const selectedMenu = await this.selectMenu(selectedProject.value);
+          if (selectedMenu) {
+            this.print("✅ Menu selected: " + selectedMenu.label);
+          }
+        }
       }
     }
   }
@@ -85,6 +91,28 @@ export class TerminalService {
       }
     ));
     return selectedProject;
+  }
+
+  private async selectMenu(projectId: number) {
+    if (!this.yApiService) {
+      vscode.window.showErrorMessage("YApi服务未初始化");
+      return;
+    }
+    this.print("🔑 Project ID: " + projectId);
+    const menuList = await this.yApiService.getMenuListById(projectId);
+    this.print("🔑 Menu list: " + JSON.stringify(menuList));
+    const selectedMenuList = menuList.map((menu) => ({
+      label: menu.desc,
+      value: menu._id,
+    }));
+    const selectedMenu = (await vscode.window.showQuickPick(
+      selectedMenuList,
+      {
+        placeHolder: "Select a menu",
+        canPickMany: false,
+      }
+    ));
+    return selectedMenu;
   }
 
   private print(message: string) {
