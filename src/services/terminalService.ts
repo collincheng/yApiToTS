@@ -46,6 +46,7 @@ export class TerminalService {
       this.print("Basepath: " + selectedProject.basepath);
       this.print("menuName: " + selectedMenu.label);
       this.print("当前有" + selectedMenu.list.length + "个接口");
+      this.print("生成接口中...");
       const folderName = await zhToEnVar(selectedMenu.label);
       const folderPath = path.join(
         absoluteWorkspaceFolder + this.configInfo.outputPath + "/" + folderName
@@ -58,16 +59,18 @@ export class TerminalService {
         const apiDetail = await this.getApiDetail(api._id);
         if (apiDetail) {
           const name = await zhToEnVar(apiDetail.title);
-          apiNameList.push(`${name}Params`, `${name}Res`);
           if (apiDetail.req_body_other) {
             const paramsType = await generateTypes(
               `${name}Params`,
               JSON.parse(apiDetail.req_body_other)
             );
             typesContent += paramsType + "\n";
+            apiNameList.push(`${name}Params`);
           }
           const types = JSON.parse(apiDetail.res_body);
-          const resType = await generateTypes(`${name}Res`, types);
+          this.print("生成返回类型中..." + JSON.stringify(types.properties.data));
+          const resType = await generateTypes(`${name}Res`, types.properties.data);
+          apiNameList.push(`${name}Res`);
           typesContent += resType + "\n";
           functionContent +=
             generateFunction({
@@ -82,6 +85,7 @@ export class TerminalService {
         path.join(folderPath, "apis.ts"),
         generateFunctionImport(apiNameList) + "\n" + functionContent
       );
+      this.print("✅ 接口生成成功");
     }
   }
 

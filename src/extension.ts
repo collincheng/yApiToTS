@@ -11,6 +11,17 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "qdll-generate-yapi" is now active!');
 
 	context.subscriptions.push(generateAPICommand);
+
+	// 创建状态栏项
+	const statusBarItem = vscode.window.createStatusBarItem(
+		vscode.StatusBarAlignment.Left,
+		100
+	);
+	statusBarItem.command = 'qdll-generate-yapi.generateAPI';
+	statusBarItem.text = '$(rocket) Generate API';
+	statusBarItem.tooltip = 'Generate API from YAPI';
+	statusBarItem.show();
+	context.subscriptions.push(statusBarItem);
 }
 
 // This method is called when your extension is deactivated

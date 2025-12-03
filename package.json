@@ -9,19 +9,25 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "qdll-generate-yapi.generateAPI",
         "title": "Generate API"
-      },
-      {
-        "command": "qdll-generate-yapi.helloWorld",
-        "title": "Hello World"
       }
-    ]
+    ],
+    "menus": {
+      "statusBar/item": [
+        {
+          "command": "qdll-generate-yapi.generateAPI",
+          "when": "true"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
