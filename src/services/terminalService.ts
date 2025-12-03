@@ -1,17 +1,27 @@
 import * as vscode from "vscode";
 import { ConfigInfoRes } from "../utils/configInfo";
 import { YApiService } from "./yApiService";
-import { compile } from "json-schema-to-typescript";
-import fs from "fs";
 import path from "path";
+import { zhToEnVar } from "../utils/translate";
+import {
+  generateFiles,
+  generateFunction,
+  generateTypes,
+  generateFunctionImport,
+} from "../utils/generate";
+import { absoluteWorkspaceFolder } from "../constant";
+import fs from "fs";
 
 export class TerminalService {
   private readonly outputChannel: vscode.OutputChannel;
-  private yApiService: YApiService; // 使用非空断言，确保一定有值
+  private yApiService: YApiService;
 
   constructor(configInfo: ConfigInfoRes, outputChannel: vscode.OutputChannel) {
     this.outputChannel = outputChannel;
-    this.yApiService = new YApiService(configInfo.username, configInfo.password);
+    this.yApiService = new YApiService(
+      configInfo.username,
+      configInfo.password
+    );
   }
 
   async start() {
@@ -32,36 +42,51 @@ export class TerminalService {
         return;
       }
       this.print("Basepath: " + selectedProject.basepath);
+      this.print("menuName: " + selectedMenu.label);
+      this.print(
+        "folderName: " + JSON.stringify(await zhToEnVar(selectedMenu.label))
+      );
       this.print("当前有" + selectedMenu.list.length + "个接口");
+      const folderName = await zhToEnVar(selectedMenu.label);
+
+      generateFiles(folderName);
+      this.print("generateFiles: " + folderName);
+      const folderPath = path.join(
+        absoluteWorkspaceFolder + "/apis/" + folderName
+      );
+      let typesContent = "";
+      let functionContent = "";
+      const apiNameList = [];
       for (const api of selectedMenu.list) {
         const apiDetail = await this.getApiDetail(api._id);
         if (apiDetail) {
-          this.print("🔑 API Detail: " + JSON.stringify(apiDetail));
-          const _reqBody = JSON.parse(apiDetail.req_body_other);
-          const workspaceFolder =
-            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
-          const absoluteWorkspaceFolder = path.resolve(workspaceFolder);
-          compile(_reqBody, "ReqBody", {
-            additionalProperties: false,
-            bannerComment: "",
-          })
-            .then((res) => {
-              fs.writeFileSync(
-                path.resolve(absoluteWorkspaceFolder, "reqBody.d.ts"),
-                res
-              );
-            })
-            .catch((err) => {
-              this.print(
-                "🔑 ReqBody Error: " +
-                  (err instanceof Error ? err.message : String(err))
-              );
-              this.print(
-                "🔑 ReqBody Stack: " + (err instanceof Error ? err.stack : "")
-              );
-            });
+          const name = await zhToEnVar(apiDetail.title);
+          apiNameList.push(`${name}Params`, `${name}Res`);
+          if (apiDetail.req_body_other) {
+            const paramsType = await generateTypes(
+              `${name}Params`,
+              JSON.parse(apiDetail.req_body_other)
+            );
+            typesContent += paramsType + "\n";
+          }
+          const types = JSON.parse(apiDetail.res_body);
+          const resType = await generateTypes(`${name}Res`, types);
+          typesContent += resType + "\n";
+          functionContent +=
+            generateFunction({
+              name,
+              originName: apiDetail.title,
+              url: selectedProject.basepath + apiDetail.path,
+            }) + "\n";
         }
       }
+      this.print("typesContent: " + typesContent);
+      this.print("functionContent: " + functionContent);
+      fs.writeFileSync(path.join(folderPath, "types.ts"), typesContent);
+      fs.writeFileSync(
+        path.join(folderPath, "apis.ts"),
+        generateFunctionImport(apiNameList) + "\n" + functionContent
+      );
     }
   }
 

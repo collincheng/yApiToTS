@@ -19,14 +19,17 @@ export const generateFunction = ({
   name,
   url,
   method = "post",
+  originName,
 }: {
   name: string;
   url: string;
-  method: string;
+  originName: string;
+  method?: string;
 }) => {
-  return `export const ${name} = async (params: ${changeCase.pascalCase(
-    name
-  )}Params) => 
+  return `/**
+ * ${originName}
+ */
+export const ${name} = async (params: ${changeCase.pascalCase(name)}Params) => 
     ${method}<${changeCase.pascalCase(name)}Res>('${url}', params);
   `;
 };
