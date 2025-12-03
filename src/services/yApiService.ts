@@ -23,6 +23,8 @@ interface Interface {
   _id: number;
   req_body_other: string;
   res_body: string;
+  path: string;
+  method: string;
 }
 
 export class YApiService {
