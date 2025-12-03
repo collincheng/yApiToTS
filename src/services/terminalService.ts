@@ -59,22 +59,38 @@ export class TerminalService {
         const apiDetail = await this.getApiDetail(api._id);
         if (apiDetail) {
           const name = await zhToEnVar(apiDetail.title);
+          let paramsName = "";
+          let resName = "";
           if (apiDetail.req_body_other) {
             const paramsType = await generateTypes(
               `${name}Params`,
               JSON.parse(apiDetail.req_body_other)
             );
             typesContent += paramsType + "\n";
-            apiNameList.push(`${name}Params`);
+            paramsName = `${name}Params`;
+            apiNameList.push(paramsName);
           }
           const types = JSON.parse(apiDetail.res_body);
-          this.print("生成返回类型中..." + JSON.stringify(types.properties.data));
-          const resType = await generateTypes(`${name}Res`, types.properties.data);
-          apiNameList.push(`${name}Res`);
-          typesContent += resType + "\n";
+          if (
+            JSON.stringify(types.properties.data.properties) !== "{}" &&
+            types.properties.data.properties !== undefined
+          ) {
+            this.print(
+              "生成返回类型中..." + JSON.stringify(types.properties.data)
+            );
+            const resType = await generateTypes(
+              `${name}Res`,
+              types.properties.data
+            );
+            resName = `${name}Res`;
+            apiNameList.push(resName);
+            typesContent += resType + "\n";
+          }
           functionContent +=
             generateFunction({
               name,
+              paramsName,
+              resName,
               originName: apiDetail.title,
               url: selectedProject.basepath + apiDetail.path,
             }) + "\n";

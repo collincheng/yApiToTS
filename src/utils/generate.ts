@@ -16,11 +16,15 @@ export const generateFunctionImport = (apiNameList: string[]) => {
 
 export const generateFunction = ({
   name,
+  paramsName,
+  resName,
   url,
   method = "post",
   originName,
 }: {
   name: string;
+  paramsName: string;
+  resName: string;
   url: string;
   originName: string;
   method?: string;
@@ -28,8 +32,8 @@ export const generateFunction = ({
   return `/**
  * ${originName}
  */
-export const ${name} = async (params: ${changeCase.pascalCase(name)}Params) => 
-    ${method}<${changeCase.pascalCase(name)}Res>('${url}', params);
+export const ${name} = async (${paramsName ? `params: ${changeCase.pascalCase(paramsName)}` : ""}) => 
+    ${method}${resName ? `<${changeCase.pascalCase(resName)}>` : ""}('${url}', params);
   `;
 };
 
