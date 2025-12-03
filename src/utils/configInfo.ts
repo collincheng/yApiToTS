@@ -6,6 +6,7 @@ import fs from 'fs';
  export interface ConfigInfoRes{
     username: string;
     password: string;
+    outputPath: string;
 }
 
 export class ConfigInfo {
