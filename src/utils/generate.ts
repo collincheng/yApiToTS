@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { absoluteWorkspaceFolder } from "../constant";
 import { compile, JSONSchema } from "json-schema-to-typescript";
 // @ts-ignore
 import * as changeCase from "change-case";
@@ -41,8 +40,7 @@ export const generateTypes = async (name: string, data: JSONSchema) => {
   });
 };
 
-export const generateFiles = (name: string) => {
-  const folderPath = path.join(absoluteWorkspaceFolder + "/apis/" + name);
+export const generateFiles = (folderPath: string) => {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
   }

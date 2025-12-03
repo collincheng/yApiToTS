@@ -15,9 +15,11 @@ import fs from "fs";
 export class TerminalService {
   private readonly outputChannel: vscode.OutputChannel;
   private yApiService: YApiService;
+  private configInfo: ConfigInfoRes;
 
   constructor(configInfo: ConfigInfoRes, outputChannel: vscode.OutputChannel) {
     this.outputChannel = outputChannel;
+    this.configInfo = configInfo;
     this.yApiService = new YApiService(
       configInfo.username,
       configInfo.password
@@ -43,17 +45,12 @@ export class TerminalService {
       }
       this.print("Basepath: " + selectedProject.basepath);
       this.print("menuName: " + selectedMenu.label);
-      this.print(
-        "folderName: " + JSON.stringify(await zhToEnVar(selectedMenu.label))
-      );
       this.print("当前有" + selectedMenu.list.length + "个接口");
       const folderName = await zhToEnVar(selectedMenu.label);
-
-      generateFiles(folderName);
-      this.print("generateFiles: " + folderName);
       const folderPath = path.join(
-        absoluteWorkspaceFolder + "/apis/" + folderName
+        absoluteWorkspaceFolder + this.configInfo.outputPath + "/" + folderName
       );
+      generateFiles(folderPath);
       let typesContent = "";
       let functionContent = "";
       const apiNameList = [];
@@ -80,8 +77,6 @@ export class TerminalService {
             }) + "\n";
         }
       }
-      this.print("typesContent: " + typesContent);
-      this.print("functionContent: " + functionContent);
       fs.writeFileSync(path.join(folderPath, "types.ts"), typesContent);
       fs.writeFileSync(
         path.join(folderPath, "apis.ts"),
